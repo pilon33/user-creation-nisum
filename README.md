@@ -442,6 +442,5 @@ API de Usuarios/
 6. **PATCH LastLogin** - Actualizar último login
 
 
-https://github.com/user-attachments/assets/b4731613-ee82-4d24-b97c-48910902de15
 
 
