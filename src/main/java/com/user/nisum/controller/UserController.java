@@ -1,6 +1,8 @@
 package com.user.nisum.controller;
 
 import com.user.nisum.controllers.resources.UsuariosResource;
+import com.user.nisum.dtos.LoginRequestDTO;
+import com.user.nisum.dtos.LoginResponseDTO;
 import com.user.nisum.dtos.UserRegistrationRequestDTO;
 import com.user.nisum.dtos.UserRegistrationResponseDTO;
 import com.user.nisum.service.UserService;
@@ -8,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.NativeWebRequest;
+
+import java.util.Map;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -58,5 +62,31 @@ public class UserController implements UsuariosResource {
     @Override
     public UserRegistrationResponseDTO actualizarUltimoLogin(UUID id) {
         return userService.updateLastLogin(id);
+    }
+
+    /**
+     * Endpoint protegido para verificar que el token JWT es válido
+     * Requiere un token JWT válido en el header Authorization
+     */
+    @GetMapping("/api/usuarios/verificar-token")
+    public ResponseEntity<Map<String, Object>> verificarToken() {
+        Map<String, Object> response = Map.of(
+            "mensaje", "Token JWT válido",
+            "status", "authenticated",
+            "timestamp", System.currentTimeMillis()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @Override
+    public LoginResponseDTO apiUsuariosLoginPost(LoginRequestDTO loginRequestDTO) {
+        UserRegistrationResponseDTO user = userService.login(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+        
+        LoginResponseDTO response = new LoginResponseDTO();
+        response.setMensaje("Login exitoso");
+        response.setToken(user.getToken());
+        response.setUsuario(user);
+        
+        return response;
     }
 } 

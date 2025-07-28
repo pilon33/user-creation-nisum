@@ -8,8 +8,10 @@ API RESTful para el registro de usuarios con validaciones de email y contraseña
 
 ### ✅ **Endpoints Principales**
 - **POST** `/api/usuarios/registro` - Registro de usuarios
+- **POST** `/api/usuarios/login` - Login para obtener token JWT
 - **GET** `/api/usuarios/email/{email}` - Obtener usuario por email
 - **PATCH** `/api/usuarios/{id}/login` - Actualizar último login
+- **GET** `/api/usuarios/verificar-token` - Verificar token JWT (requiere JWT)
 
 ### ✅ **Validaciones**
 - **Email**: Formato válido con expresión regular
@@ -19,7 +21,8 @@ API RESTful para el registro de usuarios con validaciones de email y contraseña
 
 ### ✅ **Características Técnicas**
 - **UUID**: IDs únicos para usuarios
-- **JWT Tokens**: Generación automática de tokens de acceso
+- **JWT Tokens**: Generación y validación automática de tokens de acceso
+- **Autenticación**: Sistema completo de autenticación con JWT
 - **Persistencia**: Base de datos H2 en memoria
 - **Mensajes de Error**: Amigables y descriptivos
 - **Documentación**: Swagger UI integrado
@@ -303,14 +306,17 @@ graph TB
     subgraph "Spring Security"
         A[SecurityConfig]
         B[PasswordEncoder]
-        C[JWT Filter]
+        C[JwtAuthenticationFilter]
+        D[CustomUserDetailsService]
     end
 
    subgraph "Endpoints"
-      D["`/api/usuarios/registro`"]
-      E["`/swagger-ui/**`"]
-      F["`/h2-console/**`"]
-      G["Otros endpoints"]
+      E["`/api/usuarios/registro`"]
+      F["`/api/usuarios/login`"]
+      G["`/swagger-ui/**`"]
+      H["`/h2-console/**`"]
+      I["`/api/usuarios/verificar-token`"]
+      J["Otros endpoints"]
    end
     
     A --> B
@@ -319,11 +325,18 @@ graph TB
     A --> E
     A --> F
     A --> G
+    A --> H
+    A --> I
+    A --> J
     
-    D -.->|Permit All| A
     E -.->|Permit All| A
     F -.->|Permit All| A
-    G -.->|Authenticated| A
+    G -.->|Permit All| A
+    H -.->|Permit All| A
+    I -.->|JWT Required| A
+    J -.->|JWT Required| A
+    
+    C --> D
 ```
 
 ## ✅ **Validaciones Implementadas**
@@ -371,7 +384,13 @@ spring:
 - Endpoints públicos: `/api/usuarios/registro`, `/api/usuarios/email/**`, `/api/usuarios/*/login`
 - Documentación: `/swagger-ui/**`, `/api-docs/**`, `/h2-console/**`
 
-## 📊 **Ejemplos de Uso**
+## 🔐 **Autenticación JWT**
+
+### **Flujo Completo de Autenticación**
+
+1. **Registro de Usuario** (genera JWT automáticamente)
+2. **Login** (renueva JWT)
+3. **Acceso a Endpoints Protegidos** (valida JWT)
 
 ### **Registro de Usuario**
 ```bash
@@ -389,6 +408,57 @@ curl -X POST "http://localhost:8080/api/usuarios/registro" \
       }
     ]
   }'
+```
+
+**Respuesta incluye token JWT:**
+```json
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "created": "2024-01-15T10:30:00Z",
+  "modified": "2024-01-15T10:30:00Z",
+  "last_login": "2024-01-15T10:30:00Z",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "isactive": true,
+  "name": "José Francisco Valdez",
+  "email": "jose.valdez@example.com",
+  "phones": [...]
+}
+```
+
+### **Login para Renovar Token**
+```bash
+curl -X POST "http://localhost:8080/api/usuarios/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jose.valdez@example.com",
+    "password": "SecurePass1!"
+  }'
+```
+
+### **Verificar Token JWT**
+```bash
+curl -X GET "http://localhost:8080/api/usuarios/verificar-token" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Ver documentación completa en:** 
+- [JWT_USAGE.md](JWT_USAGE.md) - Guía completa de JWT
+- [POSTMAN_USAGE.md](POSTMAN_USAGE.md) - Guía de uso de Postman
+
+### **Login para Obtener Token JWT**
+```bash
+curl -X POST "http://localhost:8080/api/usuarios/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jose.valdez@example.com",
+    "password": "SecurePass1!"
+  }'
+```
+
+### **Verificar Token JWT**
+```bash
+curl -X GET "http://localhost:8080/api/usuarios/verificar-token" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 ### **Obtener Usuario por Email**
@@ -409,10 +479,12 @@ curl -X PATCH "http://localhost:8080/api/usuarios/{user-id}/login"
 ```
 API de Usuarios/
 ├── POST - Registro Exitoso - José Francisco Valdez
+├── POST - Login para Obtener JWT
 ├── POST - Test LastLogin - Nuevo Usuario
 ├── POST - Múltiples Teléfonos
 ├── GET - Obtener Usuario por Email
 ├── GET - Verificar Usuario Existente
+├── GET - Verificar Token JWT
 └── PATCH - Actualizar LastLogin
 ```
 

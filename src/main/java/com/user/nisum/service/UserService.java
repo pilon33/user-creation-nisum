@@ -10,4 +10,5 @@ public interface UserService {
     UserRegistrationResponseDTO getUserById(UUID id);
     UserRegistrationResponseDTO getUserByEmail(String email);
     UserRegistrationResponseDTO updateLastLogin(UUID userId);
+    UserRegistrationResponseDTO login(String email, String password);
 } 

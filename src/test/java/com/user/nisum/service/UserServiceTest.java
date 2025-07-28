@@ -307,4 +307,70 @@ class UserServiceTest {
         assertEquals("Usuario no encontrado con email: " + email, exception.getMessage());
         verify(userRepository).findByEmail(email);
     }
+
+    @Test
+    void login_Success() {
+        // Arrange
+        String email = "jose.valdez@empresa.com";
+        String password = "SecurePass1@";
+        String newToken = "new.jwt.token.here";
+        
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.of(savedUser));
+        when(passwordEncoder.matches(password, savedUser.getPassword())).thenReturn(true);
+        when(jwtService.generateToken(savedUser.getId(), savedUser.getEmail())).thenReturn(newToken);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userMapper.toResponse(savedUser)).thenReturn(response);
+
+        // Act
+        UserRegistrationResponseDTO result = userService.login(email, password);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("José Francisco Valdez", result.getName());
+        verify(userRepository).findByEmail(email);
+        verify(passwordEncoder).matches(password, savedUser.getPassword());
+        verify(jwtService).generateToken(savedUser.getId(), savedUser.getEmail());
+        verify(userRepository).save(any(User.class));
+        verify(userMapper).toResponse(savedUser);
+    }
+
+    @Test
+    void login_UserNotFound_ThrowsBusinessRuleException() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        String password = "SecurePass1@";
+        
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.empty());
+
+        // Act & Assert
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            userService.login(email, password);
+        });
+
+        assertEquals("Credenciales inválidas", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(passwordEncoder, never()).matches(any(), any());
+        verify(jwtService, never()).generateToken(any(), any());
+    }
+
+    @Test
+    void login_InvalidPassword_ThrowsBusinessRuleException() {
+        // Arrange
+        String email = "jose.valdez@empresa.com";
+        String password = "WrongPassword";
+        
+        when(userRepository.findByEmail(email)).thenReturn(java.util.Optional.of(savedUser));
+        when(passwordEncoder.matches(password, savedUser.getPassword())).thenReturn(false);
+
+        // Act & Assert
+        BusinessRuleException exception = assertThrows(BusinessRuleException.class, () -> {
+            userService.login(email, password);
+        });
+
+        assertEquals("Credenciales inválidas", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(passwordEncoder).matches(password, savedUser.getPassword());
+        verify(jwtService, never()).generateToken(any(), any());
+        verify(userRepository, never()).save(any());
+    }
 } 

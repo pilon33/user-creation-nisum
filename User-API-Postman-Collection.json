@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "12345678-1234-1234-1234-123456789012",
 		"name": "API de Registro de Usuarios",
-		"description": "Colección completa para la API de registro de usuarios - Todos los endpoints",
+		"description": "Colección completa para la API de registro de usuarios con autenticación JWT - Todos los endpoints incluyendo login y endpoints protegidos",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -97,6 +97,60 @@
 					"response": []
 				},
 				{
+					"name": "POST - Login para Obtener JWT",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"jose.valdez@example.com\",\n  \"password\": \"SecurePass1!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"login"
+							]
+						},
+						"description": "Login para obtener token JWT - Guardar el token de la respuesta"
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Verificar Token JWT",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/verificar-token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"verificar-token"
+							]
+						},
+						"description": "Endpoint protegido para verificar que el token JWT es válido - Usar variable jwt_token"
+					},
+					"response": []
+				},
+				{
 					"name": "GET - Obtener Usuario por Email",
 					"request": {
 						"method": "GET",
@@ -186,6 +240,11 @@
 		{
 			"key": "test_email",
 			"value": "testlastlogin@example.com",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
 			"type": "string"
 		}
 	]

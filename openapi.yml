@@ -113,6 +113,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorDTO'
+  /api/usuarios/login:
+    post:
+      tags:
+        - Usuarios
+      summary: Login de usuario
+      description: Autentica un usuario y retorna un nuevo token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+  /api/usuarios/verificar-token:
+    get:
+      summary: Verificar token JWT
+      description: Endpoint protegido para verificar que el token JWT es válido
+      operationId: verificarTokenJWT
+      tags:
+        - Usuarios
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token JWT válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerificationResponse'
+        '401':
+          description: No autorizado - Token JWT inválido o expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDTO'
 components:
   schemas:
     UserRegistrationRequest:
@@ -220,3 +279,53 @@ components:
           type: string
           description: Mensaje de error
           example: 'Error de validación'
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario
+          example: juan@rodriguez.org
+        password:
+          type: string
+          description: Contraseña del usuario
+          example: hunter2
+    LoginResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          description: Mensaje de respuesta
+          example: 'Login exitoso'
+        token:
+          type: string
+          description: Token JWT de acceso a la API
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikp1YW4gUm9kcmlndWV6IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+        usuario:
+          $ref: '#/components/schemas/UserRegistrationResponse'
+    TokenVerificationResponse:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          description: Mensaje de respuesta
+          example: 'Token JWT válido'
+        status:
+          type: string
+          description: Estado de la autenticación
+          example: 'authenticated'
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp de la verificación
+          example: 1753717004000
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT para autenticación

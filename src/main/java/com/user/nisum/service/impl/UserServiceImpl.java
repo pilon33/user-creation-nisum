@@ -90,4 +90,25 @@ public class UserServiceImpl implements UserService {
         
         return userMapper.toResponse(updatedUser);
     }
+
+    @Override
+    @Transactional
+    public UserRegistrationResponseDTO login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessRuleException("Credenciales inválidas"));
+        
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BusinessRuleException("Credenciales inválidas");
+        }
+        
+        // Generar nuevo token JWT
+        String newToken = jwtService.generateToken(user.getId(), user.getEmail());
+        user.setToken(newToken);
+        user.setLastLogin(LocalDateTime.now());
+        
+        User updatedUser = userRepository.save(user);
+        return userMapper.toResponse(updatedUser);
+    }
+    
+
 } 

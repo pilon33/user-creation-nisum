@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
         ErrorDTODTO error = new ErrorDTODTO();
         error.setMensaje(ex.getMessage());
         
+        // Si el mensaje es sobre credenciales inválidas, usar 401
+        if (ex.getMessage().contains("Credenciales inválidas")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+        
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
@@ -42,8 +47,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDTODTO> handleGenericException(Exception ex) {
+        System.err.println("Error no manejado: " + ex.getMessage());
+        ex.printStackTrace();
+        
         ErrorDTODTO error = new ErrorDTODTO();
-        error.setMensaje("Error interno del servidor");
+        error.setMensaje("Error interno del servidor: " + ex.getMessage());
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }

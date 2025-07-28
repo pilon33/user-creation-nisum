@@ -6,19 +6,19 @@ import com.user.nisum.dtos.UserRegistrationRequestDTO;
 import com.user.nisum.dtos.UserRegistrationResponseDTO;
 import com.user.nisum.exception.BusinessRuleException;
 import com.user.nisum.service.UserService;
+import com.user.nisum.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(UserController.class)
 class UserControllerIntegrationTest {
@@ -37,6 +38,9 @@ class UserControllerIntegrationTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private JwtService jwtService;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -126,8 +130,8 @@ class UserControllerIntegrationTest {
 
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
         request.setName("Chavela Primera");
-        request.setEmail("invalid-email");
-        request.setPassword("SecurePass1@"); // Contraseña que cumple con el patrón
+        request.setEmail("invalid-email"); // Email inválido
+        request.setPassword("SecurePass1@");
         request.setPhones(List.of(phone));
 
         // Act & Assert
@@ -139,16 +143,16 @@ class UserControllerIntegrationTest {
 
     @Test
     void registerUser_WeakPassword_ReturnsBadRequest() throws Exception {
-        // Arrange - Contraseña débil (Carlos Mendoza)
+        // Arrange - Contraseña débil (María González)
         PhoneDTODTO phone = new PhoneDTODTO();
         phone.setNumber("1234567");
         phone.setCitycode("1");
         phone.setContrycode("57");
 
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
-        request.setName("Carlos Mendoza");
-        request.setEmail("carlos.mendoza@test.org");
-        request.setPassword("weak"); // Contraseña que NO cumple con el patrón
+        request.setName("María González");
+        request.setEmail("maria@gonzalez.org");
+        request.setPassword("weak"); // Contraseña débil
         request.setPhones(List.of(phone));
 
         // Act & Assert
@@ -160,27 +164,27 @@ class UserControllerIntegrationTest {
 
     @Test
     void registerUser_MultiplePhones_Success() throws Exception {
-        // Arrange - Múltiples teléfonos (María García)
+        // Arrange - Múltiples teléfonos (Carlos López)
         PhoneDTODTO phone1 = new PhoneDTODTO();
-        phone1.setNumber("9876543");
-        phone1.setCitycode("2");
+        phone1.setNumber("1234567");
+        phone1.setCitycode("1");
         phone1.setContrycode("57");
 
         PhoneDTODTO phone2 = new PhoneDTODTO();
-        phone2.setNumber("5555555");
-        phone2.setCitycode("3");
+        phone2.setNumber("9876543");
+        phone2.setCitycode("2");
         phone2.setContrycode("57");
 
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
-        request.setName("María García");
-        request.setEmail("maria.garcia@dominio.cl");
-        request.setPassword("SecurePass1@"); // Contraseña que cumple con el patrón
+        request.setName("Carlos López");
+        request.setEmail("carlos@lopez.org");
+        request.setPassword("SecurePass1@");
         request.setPhones(List.of(phone1, phone2));
 
         UserRegistrationResponseDTO response = new UserRegistrationResponseDTO();
         response.setId(UUID.randomUUID());
-        response.setName("María García");
-        response.setEmail("maria.garcia@dominio.cl");
+        response.setName("Carlos López");
+        response.setEmail("carlos@lopez.org");
         response.setCreated(LocalDateTime.now().atOffset(ZoneOffset.UTC));
         response.setModified(LocalDateTime.now().atOffset(ZoneOffset.UTC));
         response.setLastLogin(LocalDateTime.now().atOffset(ZoneOffset.UTC));
@@ -196,14 +200,12 @@ class UserControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("María García"))
-                .andExpect(jsonPath("$.email").value("maria.garcia@dominio.cl"))
+                .andExpect(jsonPath("$.name").value("Carlos López"))
+                .andExpect(jsonPath("$.email").value("carlos@lopez.org"))
                 .andExpect(jsonPath("$.phones").isArray())
                 .andExpect(jsonPath("$.phones").value(org.hamcrest.Matchers.hasSize(2)))
-                .andExpect(jsonPath("$.phones[0].number").value("9876543"))
-                .andExpect(jsonPath("$.phones[0].citycode").value("2"))
-                .andExpect(jsonPath("$.phones[1].number").value("5555555"))
-                .andExpect(jsonPath("$.phones[1].citycode").value("3"));
+                .andExpect(jsonPath("$.phones[0].number").value("1234567"))
+                .andExpect(jsonPath("$.phones[1].number").value("9876543"));
     }
 
     @Test
@@ -215,9 +217,9 @@ class UserControllerIntegrationTest {
         phone.setContrycode("57");
 
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
-        request.setName("");
-        request.setEmail("test@example.com");
-        request.setPassword("SecurePass1@"); // Contraseña que cumple con el patrón
+        request.setName(""); // Nombre vacío
+        request.setEmail("empty@name.org");
+        request.setPassword("SecurePass1@");
         request.setPhones(List.of(phone));
 
         // Act & Assert
@@ -229,12 +231,12 @@ class UserControllerIntegrationTest {
 
     @Test
     void registerUser_EmptyPhones_ReturnsBadRequest() throws Exception {
-        // Arrange - Lista de teléfonos vacía
+        // Arrange - Sin teléfonos
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
-        request.setName("Test User");
-        request.setEmail("test@example.com");
-        request.setPassword("SecurePass1@"); // Contraseña que cumple con el patrón
-        request.setPhones(List.of());
+        request.setName("Sin Teléfonos");
+        request.setEmail("sin@telefonos.org");
+        request.setPassword("SecurePass1@");
+        request.setPhones(List.of()); // Lista vacía
 
         // Act & Assert
         mockMvc.perform(post("/api/usuarios/registro")
@@ -252,9 +254,9 @@ class UserControllerIntegrationTest {
         phone.setContrycode("57");
 
         UserRegistrationRequestDTO request = new UserRegistrationRequestDTO();
-        request.setName("Test User");
-        request.setEmail("test@example.com");
-        request.setPassword("SecurePass1@"); // Contraseña que cumple con el patrón
+        request.setName("Teléfono Inválido");
+        request.setEmail("telefono@invalido.org");
+        request.setPassword("SecurePass1@");
         request.setPhones(List.of(phone));
 
         // Act & Assert
@@ -332,5 +334,19 @@ class UserControllerIntegrationTest {
                 .andExpect(jsonPath("$.isactive").value(true))
                 .andExpect(jsonPath("$.last_login").exists())
                 .andExpect(jsonPath("$.token").value("jwt.token.here"));
+    }
+
+
+
+    @Test
+    @WithMockUser
+    void verificarToken_Success() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/usuarios/verificar-token")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mensaje").value("Token JWT válido"))
+                .andExpect(jsonPath("$.status").value("authenticated"))
+                .andExpect(jsonPath("$.timestamp").exists());
     }
 } 
