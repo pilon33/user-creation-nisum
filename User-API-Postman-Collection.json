@@ -1,0 +1,192 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "API de Registro de Usuarios",
+		"description": "Colección completa para la API de registro de usuarios - Todos los endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "API de Usuarios",
+			"item": [
+				{
+					"name": "POST - Registro Exitoso - José Francisco Valdez",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"José Francisco Valdez\",\n  \"email\": \"jose.valdez@example.com\",\n  \"password\": \"SecurePass1!\",\n  \"phones\": [\n    {\n      \"number\": \"1234567\",\n      \"citycode\": \"1\",\n      \"contrycode\": \"57\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/registro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"registro"
+							]
+						},
+						"description": "Registro exitoso de José Francisco Valdez"
+					},
+					"response": []
+				},
+				{
+					"name": "POST - Test LastLogin - Nuevo Usuario",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test LastLogin User\",\n  \"email\": \"testlastlogin@example.com\",\n  \"password\": \"SecurePass1!\",\n  \"phones\": [\n    {\n      \"number\": \"1234567\",\n      \"citycode\": \"1\",\n      \"contrycode\": \"57\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/registro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"registro"
+							]
+						},
+						"description": "Usuario para probar lastLogin - Guardar el ID de la respuesta"
+					},
+					"response": []
+				},
+				{
+					"name": "POST - Múltiples Teléfonos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Maria Garcia\",\n  \"email\": \"maria@garcia.com\",\n  \"password\": \"SecurePass1!\",\n  \"phones\": [\n    {\n      \"number\": \"9876543\",\n      \"citycode\": \"2\",\n      \"contrycode\": \"57\"\n    },\n    {\n      \"number\": \"5555555\",\n      \"citycode\": \"3\",\n      \"contrycode\": \"57\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/registro",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"registro"
+							]
+						},
+						"description": "Registro con múltiples teléfonos"
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Obtener Usuario por Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/email/{{test_email}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"email",
+								"{{test_email}}"
+							]
+						},
+						"description": "Obtener usuario por email - Usar variable test_email"
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Verificar Usuario Existente",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/email/jose.valdez@example.com",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"email",
+								"jose.valdez@example.com"
+							]
+						},
+						"description": "Verificar usuario existente"
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH - Actualizar LastLogin",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/api/usuarios/{{user_id}}/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"usuarios",
+								"{{user_id}}",
+								"login"
+							]
+						},
+						"description": "Actualizar último login del usuario - Usar variable user_id"
+					},
+					"response": []
+				}
+			],
+			"description": "Todos los endpoints de la API de usuarios"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "test_email",
+			"value": "testlastlogin@example.com",
+			"type": "string"
+		}
+	]
+} 
