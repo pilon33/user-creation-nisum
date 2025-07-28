@@ -513,3 +513,6 @@ API de Usuarios/
 5. **GET por Email** - Obtener usuario existente
 6. **PATCH LastLogin** - Actualizar último login
 
+
+
+
